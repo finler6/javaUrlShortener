@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Vinch · Lightning Fast URL Shortener</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Ctext y='50' x='6' font-size='48'%3E⚡%3C/text%3E%3C/svg%3E">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        /* Animated gradient background */
+        .animated-bg {
+            background: linear-gradient(-45deg, #0f0f23, #1a1a2e, #16213e, #0f0f23);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism effects */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-button {
+            background: rgba(139, 92, 246, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-button:hover {
+            background: rgba(139, 92, 246, 1);
+            box-shadow: 0 20px 40px -12px rgba(139, 92, 246, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Floating elements animation */
+        .floating {
+            animation: floating 6s ease-in-out infinite;
+        }
+
+        .floating:nth-child(2) {
+            animation-delay: -2s;
+        }
+
+        .floating:nth-child(3) {
+            animation-delay: -4s;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(1deg); }
+            66% { transform: translateY(-10px) rotate(-1deg); }
+        }
+
+        /* Neon glow effects */
+        .neon-text {
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.5),
+            0 0 20px rgba(139, 92, 246, 0.3),
+            0 0 30px rgba(139, 92, 246, 0.2);
+        }
+
+        .success-glow {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3),
+            0 0 40px rgba(16, 185, 129, 0.1);
+        }
+
+        /* Input focus effects */
+        .magic-input {
+            transition: all 0.3s ease;
+        }
+
+        .magic-input:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+        }
+
+        /* Particle background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(139, 92, 246, 0.6);
+            border-radius: 50%;
+            animation: particleFloat 20s linear infinite;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top: 2px solid #8b5cf6;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Pulse animation for stats */
+        .pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen animated-bg text-white overflow-x-hidden">
+<!-- Floating particles background -->
+<div class="particles" id="particles"></div>
+
+<!-- Floating decoration elements -->
+<div class="fixed inset-0 pointer-events-none z-10">
+    <div class="floating absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-blue-500/10 rounded-full blur-xl"></div>
+    <div class="floating absolute top-40 right-20 w-24 h-24 bg-gradient-to-br from-pink-500/10 to-purple-500/10 rounded-full blur-xl"></div>
+    <div class="floating absolute bottom-20 left-20 w-28 h-28 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-full blur-xl"></div>
+</div>
+
+<div class="relative z-20">
+    <!-- Header -->
+    <header class="max-w-7xl mx-auto px-6 pt-8 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 grid place-items-center text-2xl shadow-lg shadow-purple-500/25">
+                ⚡
+            </div>
+            <div>
+                <div class="font-bold text-xl neon-text">Vinch</div>
+                <div class="text-xs text-purple-300">Lightning Fast</div>
+            </div>
+        </div>
+        <nav class="flex items-center gap-6 text-sm">
+            <div class="flex items-center gap-2 text-xs text-gray-400">
+                <div class="w-2 h-2 bg-green-500 rounded-full pulse-slow"></div>
+                <span>All systems operational</span>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 pb-20">
+        <!-- Hero Section -->
+        <section class="mt-16 text-center mb-16">
+            <h1 class="text-5xl md:text-7xl font-bold mb-6">
+                    <span class="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+                        Shorten URLs
+                    </span>
+                <br>
+                <span class="neon-text">Lightning Fast</span>
+            </h1>
+            <p class="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+                Transform long, unwieldy URLs into sleek, shareable links.
+                Powered by advanced analytics and blazing-fast redirects.
+            </p>
+        </section>
+
+        <!-- Main Content Grid -->
+        <div class="grid lg:grid-cols-3 gap-8 items-start">
+            <!-- URL Shortener Card -->
+            <div class="lg:col-span-2 glass-card rounded-3xl p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-8 h-8 rounded-xl bg-purple-500/20 grid place-items-center">
+                        🔗
+                    </div>
+                    <h2 class="text-2xl font-semibold">Create Short Link</h2>
+                </div>
+
+                <form id="form" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium mb-3 text-gray-300">
+                            Enter your URL
+                        </label>
+                        <input
+                                id="url"
+                                type="url"
+                                required
+                                placeholder="https://example.com/your-very-long-url-here"
+                                class="w-full rounded-2xl px-6 py-4 bg-white/5 border border-white/10 outline-none magic-input text-white placeholder-gray-400"
+                        />
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <button
+                                id="btn"
+                                type="submit"
+                                class="glass-button rounded-2xl px-8 py-4 font-semibold flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <span id="btnIcon">✨</span>
+                            <span>Shorten URL</span>
+                        </button>
+                        <span id="hint" class="text-sm text-purple-300"></span>
+                    </div>
+                </form>
+
+                <!-- Result Card -->
+                <div id="result" class="hidden mt-8 glass-card rounded-2xl p-6 border-l-4 border-l-green-500 success-glow">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-6 h-6 rounded-full bg-green-500 grid place-items-center text-sm">
+                            ✓
+                        </div>
+                        <span class="text-green-300 font-semibold uppercase tracking-wide text-sm">
+                                Success
+                            </span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-4">
+                        <a
+                                id="shortLink"
+                                href="#"
+                                target="_blank"
+                                class="font-mono text-lg text-blue-300 hover:text-blue-200 underline break-all"
+                        ></a>
+                        <div class="flex gap-2">
+                            <button
+                                    id="copy"
+                                    class="px-4 py-2 rounded-xl bg-green-500/20 hover:bg-green-500/30 border border-green-300/30 text-sm font-medium transition-colors"
+                            >
+                                Copy
+                            </button>
+                            <a
+                                    id="open"
+                                    target="_blank"
+                                    class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-sm font-medium transition-colors"
+                            >
+                                Visit →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats & Info Sidebar -->
+            <div class="space-y-6">
+                <!-- Recent Links -->
+                <div class="glass-card rounded-3xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <span>⏱️</span>
+                        Recent Links
+                    </h3>
+                    <ul id="history" class="space-y-3 text-sm max-h-64 overflow-auto"></ul>
+                </div>
+
+                <!-- Features Card -->
+                <div class="glass-card rounded-3xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <span>🚀</span>
+                        Why Choose Vinch?
+                    </h3>
+                    <div class="space-y-4 text-sm">
+                        <div class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded-full bg-purple-500/20 grid place-items-center mt-0.5">
+                                ⚡
+                            </div>
+                            <div>
+                                <div class="font-medium text-purple-300">Lightning Fast</div>
+                                <div class="text-gray-400">Sub-millisecond redirects with Redis caching</div>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded-full bg-blue-500/20 grid place-items-center mt-0.5">
+                                📊
+                            </div>
+                            <div>
+                                <div class="font-medium text-blue-300">Real-time Analytics</div>
+                                <div class="text-gray-400">Kafka-powered insights and click tracking</div>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded-full bg-green-500/20 grid place-items-center mt-0.5">
+                                🛡️
+                            </div>
+                            <div>
+                                <div class="font-medium text-green-300">Enterprise Ready</div>
+                                <div class="text-gray-400">Scalable Java microservices architecture</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Architecture Info -->
+                <div class="glass-card rounded-3xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <span>🏗️</span>
+                        Architecture
+                    </h3>
+                    <div class="space-y-3 text-xs text-gray-400 leading-relaxed">
+                        <div>
+                            <strong class="text-purple-300">Shortener Service</strong> - Handles URL creation, validation, and storage in PostgreSQL
+                        </div>
+                        <div>
+                            <strong class="text-blue-300">Redirect Service</strong> - Lightning-fast redirects with Redis → PostgreSQL fallback
+                        </div>
+                        <div>
+                            <strong class="text-green-300">Analytics Pipeline</strong> - Real-time event streaming via Apache Kafka
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="max-w-7xl mx-auto px-6 pb-8 text-center">
+        <div class="flex items-center justify-center gap-4 text-sm text-gray-400">
+            <span>Made with ☕ and ⚡ by Vinch</span>
+            <div class="w-1 h-1 bg-gray-600 rounded-full"></div>
+            <span>Powered by Java & Kafka</span>
+        </div>
+    </footer>
+</div>
+
+<script>
+    const form = document.getElementById('form');
+    const urlInput = document.getElementById('url');
+    const btn = document.getElementById('btn');
+    const btnIcon = document.getElementById('btnIcon');
+    const hint = document.getElementById('hint');
+    const result = document.getElementById('result');
+    const shortLink = document.getElementById('shortLink');
+    const openBtn = document.getElementById('open');
+    const copyBtn = document.getElementById('copy');
+    const historyEl = document.getElementById('history');
+
+    const API = '/api/shorten';
+    const REDIR_ORIGIN = 'https://go.vinch.uk';
+
+    // Create floating particles
+    function createParticles() {
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 15; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 20 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+            particlesContainer.appendChild(particle);
+        }
+    }
+
+    function setLoading(loading) {
+        btn.disabled = loading;
+        if (loading) {
+            btnIcon.innerHTML = '<div class="spinner"></div>';
+            hint.textContent = 'Creating your short link...';
+            hint.className = 'text-sm text-purple-300';
+        } else {
+            btnIcon.textContent = '✨';
+            hint.textContent = '';
+        }
+    }
+
+    function showSuccess(message) {
+        hint.textContent = message;
+        hint.className = 'text-sm text-green-300';
+        setTimeout(() => {
+            hint.textContent = '';
+        }, 3000);
+    }
+
+    function showError(message) {
+        hint.textContent = message;
+        hint.className = 'text-sm text-red-300';
+        setTimeout(() => {
+            hint.textContent = '';
+        }, 5000);
+    }
+
+    function pushHistory(item) {
+        const key = 'vinch-history';
+        const arr = JSON.parse(localStorage.getItem(key) || '[]');
+        arr.unshift({...item, timestamp: new Date().toISOString()});
+        localStorage.setItem(key, JSON.stringify(arr.slice(0, 10)));
+        renderHistory();
+    }
+
+    function renderHistory() {
+        const arr = JSON.parse(localStorage.getItem('vinch-history') || '[]');
+        historyEl.innerHTML = '';
+
+        if (!arr.length) {
+            historyEl.innerHTML = `
+                    <li class="text-gray-400 text-center py-4 italic">
+                        No links yet. Create your first one above!
+                    </li>
+                `;
+            return;
+        }
+
+        arr.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'glass-card rounded-2xl p-3 hover:bg-white/10 transition-colors';
+
+            const timeAgo = getTimeAgo(new Date(item.timestamp));
+            const domain = new URL(item.originalUrl).hostname;
+
+            li.innerHTML = `
+                    <div class="space-y-2">
+                        <a href="${item.shortUrl}" target="_blank"
+                           class="font-mono text-blue-300 hover:text-blue-200 text-sm block truncate">
+                            ${item.shortUrl}
+                        </a>
+                        <div class="text-xs text-gray-400 truncate">${domain}</div>
+                        <div class="text-xs text-purple-300">${timeAgo}</div>
+                    </div>
+                `;
+            historyEl.appendChild(li);
+        });
+    }
+
+    function getTimeAgo(date) {
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+
+        if (seconds < 60) return 'just now';
+        if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+        if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+        return Math.floor(seconds / 86400) + 'd ago';
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const originalUrl = urlInput.value.trim();
+        if (!originalUrl) return;
+
+        try {
+            setLoading(true);
+            const response = await fetch(API, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ url: originalUrl })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Failed to shorten URL');
+            }
+
+            const data = await response.json();
+            const shortUrl = `${REDIR_ORIGIN}/${data.slug}`;
+
+            // Show result with animation
+            result.classList.remove('hidden');
+            result.style.opacity = '0';
+            result.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                result.style.transition = 'all 0.5s ease';
+                result.style.opacity = '1';
+                result.style.transform = 'translateY(0)';
+            }, 10);
+
+            shortLink.textContent = shortUrl;
+            shortLink.href = shortUrl;
+            openBtn.href = shortUrl;
+
+            pushHistory({ shortUrl, originalUrl });
+            showSuccess('Short link created successfully!');
+
+            // Clear input
+            urlInput.value = '';
+
+        } catch (error) {
+            showError('Failed to create short link. Please try again.');
+            console.error('Shortening error:', error);
+        } finally {
+            setLoading(false);
+            urlInput.focus();
+        }
+    });
+
+    copyBtn.addEventListener('click', async () => {
+        const text = shortLink.textContent;
+        try {
+            await navigator.clipboard.writeText(text);
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = 'Copied ✓';
+            copyBtn.className = copyBtn.className.replace('bg-green-500/20', 'bg-green-500/40');
+
+            setTimeout(() => {
+                copyBtn.textContent = originalText;
+                copyBtn.className = copyBtn.className.replace('bg-green-500/40', 'bg-green-500/20');
+            }, 2000);
+        } catch (error) {
+            copyBtn.textContent = 'Failed ✗';
+            setTimeout(() => copyBtn.textContent = 'Copy', 2000);
+        }
+    });
+
+    // Initialize
+    createParticles();
+    renderHistory();
+
+    // Auto-focus URL input
+    urlInput.focus();
+</script>
+</body>
+</html>

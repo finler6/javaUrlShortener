@@ -1,0 +1,18 @@
+type ClickStat {
+  slug: String!
+  day:  String!
+  cnt:  Int!
+}
+
+type Query {
+  clicks(
+    slug: String!
+    from: String
+    to:   String
+  ): [ClickStat]
+
+  top(
+    n:   Int    = 10
+    day: String!
+  ): [ClickStat]
+}

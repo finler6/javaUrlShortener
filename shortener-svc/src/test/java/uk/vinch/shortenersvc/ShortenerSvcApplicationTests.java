@@ -1,0 +1,13 @@
+package uk.vinch.shortenersvc;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class ShortenerSvcApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
